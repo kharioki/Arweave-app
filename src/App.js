@@ -5,15 +5,24 @@ import Arweave from 'arweave';
 // connect to an Arweave node
 const arweave = Arweave.init({});
 
+/* to use mainnet */
+// const arweave = Arweave.init({
+//   host: 'arweave.net',
+//   port: 443,
+//   protocol: 'https',
+// });
+
 function App() {
   const [state, setState] = useState('');
   const [transactionId, setTransactionId] = useState('');
+  const [loadingState, setLoadingState] = useState('');
 
   async function createTransaction() {
     if (!state) return;
     try {
       const formData = state
       setState('');
+      setLoadingState('sendingTransaction');
 
       // create and send transaction to Arweave
       let transaction = await arweave.createTransaction({ data: formData });
@@ -29,6 +38,7 @@ function App() {
       }
 
       setTransactionId(transaction.id);
+      setLoadingState('transactionSent');
     } catch (err) {
       console.log('error', err);
     }
@@ -46,15 +56,25 @@ function App() {
       });
   }
 
+  if (loadingState === 'sendingTransaction') return (
+    <div className="container">
+      <p>Sending Transaction...</p>
+    </div>
+  );
+
   return (
     <div className="container">
       <button style={button} onClick={createTransaction}>
         Create Transaction
       </button>
 
-      <button style={button} onClick={readFromArweave}>
-        Read Transaction
-      </button>
+      {
+        loadingState === 'transactionSent' && (
+          <button style={button} onClick={readFromArweave}>
+            Read Transaction
+          </button>
+        )
+      }
 
       <input
         style={input}
